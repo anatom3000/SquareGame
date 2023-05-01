@@ -52,7 +52,7 @@ class Viewport:
         self.position /= delta
 
     def convert_position(self, position: np.ndarray) -> np.ndarray:
-        return self.zoom * position + self.resolution / 2 - self.position
+        return self.zoom * position * (1, -1) + self.resolution / 2 - self.position
 
     def convert_distance(self, distance: float | np.ndarray) -> float | np.ndarray:
         return distance * self.zoom
