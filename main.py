@@ -21,13 +21,14 @@ viewport = Viewport(screen, zoom=2.0, position=np.array([200.0, -200.0]))
 
 things = []
 for i in range(5):
-    things.append(Object(np.array([6.5*30+5*30*i, 30*i])))
+    # things.append(Object(np.array([6.5*30+5*30*i, 60+30*i])))
+    things.append(Object(np.array([4.5*30+30*i, 90])))
 
 level = Level(things)
 
 running = True
 while running:
-    dt = clock.tick(MAX_FPS) / 1000
+    dt = clock.tick(MAX_FPS) / 1000 * 0.125
 
     for ev in pygame.event.get():
         if ev.type == QUIT:
@@ -59,6 +60,6 @@ while running:
 
     level.draw(viewport)
 
-    pygame.display.set_caption(f"FPS: {round(clock.get_fps())} - {level.input_activated}")
+    pygame.display.set_caption(f"FPS: {round(clock.get_fps())} - {level.player.position}")
 
     pygame.display.flip()

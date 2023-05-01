@@ -51,28 +51,33 @@ class Level:
 
         if self.input_activated:
             self.player.jump()
+        if self.player.check_for_ground_after is not None:
+            if self.player.position[0] >= self.player.check_for_ground_after:
+                self.player.on_ground = False
 
         small_player_box = self.player.small_bounding_box
         big_player_box = self.player.big_bounding_box
 
         for obj in self.objects:
-            if check_collision(big_player_box, obj.bounding_box):
-                if (not self.player.on_ground) and check_collision_solid_top(big_player_box, obj.bounding_box):
-                    self.player.align_bottom_to_object(obj)
+            if big_player_box.colliderect(obj.bounding_box):
+                if not self.player.on_ground \
+                        and big_player_box.clipline(obj.bounding_box.bottomleft, obj.bounding_box.bottomright):
+                    self.player.align_to_object(obj)
                     self.player.on_ground = True
                     if self.input_activated:
                         self.player.jump()
                     else:
                         self.player.velocity[1] = 0.0
 
-                if check_collision(small_player_box, obj.bounding_box):
+                if small_player_box.colliderect(obj.bounding_box):
                     self.stop()
 
         self.player.position += self.player.velocity * dt
 
-        if self.player.position[1] < 15:
-            self.player.position[1] = 15
+        if self.player.position[1] < GROUND_HEIGHT + self.player.big_hitbox[1] / 2:
+            self.player.position[1] = GROUND_HEIGHT + self.player.big_hitbox[1] / 2
             self.player.on_ground = True
+            self.player.check_for_ground_after = None
 
     def draw(self, viewport: Viewport):
         for obj in self.objects:

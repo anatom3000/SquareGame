@@ -72,7 +72,7 @@ class Viewport:
         self.destination.blit(source, rect)
 
     def draw_rect(self, color: tuple[int, int, int], center: np.ndarray, size: np.ndarray, width: float = 1.0):
-        # noinspection PyTypeChecker
+        # noinspection PyTypeCheckerz
         rect = pygame.Rect((0.0, 0.0, 0.0, 0.0))
 
         rect.size = self.convert_distance(size)
