@@ -1,6 +1,7 @@
 import numpy as np
 
-from objects import Player, Object
+from objects import Object
+from player import Player
 from constants import *
 from viewport import Viewport
 
@@ -33,7 +34,7 @@ def check_collision_solid_top(aabb1: tuple[np.ndarray, np.ndarray], aabb2: tuple
 
 class Level:
     def __init__(self, objects: list[Object]):
-        self.player = Player(position=np.array([0.0, 0.0]))
+        self.player = Player(position=np.array([0.0, 105]))
 
         self.objects = objects
 
@@ -59,17 +60,18 @@ class Level:
         big_player_box = self.player.big_bounding_box
 
         for obj in self.objects:
-            if big_player_box.colliderect(obj.bounding_box):
-                if not self.player.on_ground \
-                        and big_player_box.clipline(obj.bounding_box.bottomleft, obj.bounding_box.bottomright):
-                    self.player.align_to_object(obj)
-                    self.player.on_ground = True
-                    if self.input_activated:
-                        self.player.jump()
-                    else:
-                        self.player.velocity[1] = 0.0
+            if big_player_box.collide_rect(obj.bounding_box):
+                if not self.player.on_ground:
+                    distance_to_top = big_player_box.bottom - obj.bounding_box.top
+                    if distance_to_top > -SOLID_ALIGNEMENT_TOLERANCE:
+                        self.player.align_to_object(obj)
+                        self.player.on_ground = True
+                        if self.input_activated:
+                            self.player.jump()
+                        else:
+                            self.player.velocity[1] = 0.0
 
-                if small_player_box.colliderect(obj.bounding_box):
+                if small_player_box.collide_rect(obj.bounding_box):
                     self.stop()
 
         self.player.position += self.player.velocity * dt

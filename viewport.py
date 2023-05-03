@@ -5,13 +5,15 @@ from math import tanh
 import numpy as np
 import pygame
 
+from rect import Rect
+
 
 def lerp(a, b, x):
     return (1 - x) * a + x * b
 
 
 class Viewport:
-    def __init__(self, destination: pygame.Surface, zoom: float = 2.0, position: np.array = None):
+    def __init__(self, destination: pygame.Surface, zoom: float = 2.0, position: np.ndarray = None):
         self._position = np.array([0.0, 0.0]) if position is None else position
         self._zoom = zoom
 
@@ -71,16 +73,15 @@ class Viewport:
 
         self.destination.blit(source, rect)
 
-    def draw_rect(self, color: tuple[int, int, int], center: np.ndarray, size: np.ndarray, width: float = 1.0):
-        # noinspection PyTypeCheckerz
-        rect = pygame.Rect((0.0, 0.0, 0.0, 0.0))
+    def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float = 1.0):
+        pg_rect = pygame.Rect((0, 0, 0, 0))
 
-        rect.size = self.convert_distance(size)
-        rect.center = self.convert_position(center)
+        pg_rect.size = self.convert_distance(rect.size)
+        pg_rect.center = self.convert_position(rect.center)
 
         if width == 0.0:
             width = 0
         else:
             width = int(self.convert_distance(width))
 
-        pygame.draw.rect(self.destination, color, rect, width)
+        pygame.draw.rect(self.destination, color, pg_rect, width)
