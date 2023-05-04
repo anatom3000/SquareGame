@@ -16,6 +16,7 @@ class Player:
 
         self.on_ground = True
         self.check_for_ground_after: Optional[float] = None
+        self.recheck_for_ground = False
 
         self.small_hitbox = np.array([9.0, 9.0])
         self.big_hitbox = np.array([30.0, 30.0])
@@ -42,3 +43,5 @@ class Player:
 
         self.on_ground = False
         self.velocity[1] = JUMP_VELOCITY
+
+        self.check_for_ground_after = None
