@@ -9,6 +9,7 @@ from rect import Rect
 
 from constants import *
 
+
 class Player:
     def __init__(self, position: np.ndarray):
         self.position = position

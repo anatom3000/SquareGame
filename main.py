@@ -20,11 +20,12 @@ clock = pygame.time.Clock()
 
 viewport = Viewport(screen, zoom=2.0, position=np.array([200.0, GROUND_HEIGHT-30*15]))
 
-spacing = (4, 1)
+spacing = (1/4, 1/4)
+first_block = (10, 0)
 
 things = []
 for i in range(100):
-    things.append(Object(np.array([6.5*30+spacing[0]*30*i, 135+spacing[1]*30*i])))
+    things.append(Object(np.array([first_block[0]*30+spacing[0]*30*i, 105+first_block[1]*30+spacing[1]*30*i])))
     # things.append(Object(np.array([4.5*30+30*i, 135])))
     # things.append(Object(np.array([30*i, 75])))
 

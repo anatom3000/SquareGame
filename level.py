@@ -40,15 +40,14 @@ class Level:
 
         for obj in self.objects:
             if big_player_box.collide_rect(obj.bounding_box):
-                if not self.player.on_ground:
-                    distance_to_top = big_player_box.bottom - obj.bounding_box.top
-                    if distance_to_top > alignement_tolerance:
-                        self.player.align_to_object(obj)
-                        self.player.on_ground = True
-                        if self.input_activated:
-                            self.player.jump()
-                        else:
-                            self.player.velocity[1] = 0.0
+                distance_to_top = big_player_box.bottom - obj.bounding_box.top
+                if distance_to_top > alignement_tolerance:
+                    self.player.align_to_object(obj)
+                    self.player.on_ground = True
+                    if self.input_activated:
+                        self.player.jump()
+                    else:
+                        self.player.velocity[1] = 0.0
 
                 if small_player_box.collide_rect(obj.bounding_box):
                     self.stop()
