@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pygame.mixer
 
 from object import Object, HitboxKind
 from player import Player
@@ -107,3 +108,4 @@ class Level:
 
     def stop(self):
         self.stopped = True
+        pygame.mixer.music.stop()

@@ -36,7 +36,7 @@ class Object:
 
     def draw(self, viewport: Viewport):
         viewport.blit(self.kind.texture, Rect(self.position, self.kind.texture_size))
-        viewport.draw_rect(OBJECT_COLOR, self.bounding_box, width=0.5)
+        # viewport.draw_rect(OBJECT_COLOR, self.bounding_box, width=0.5)
 
     @property
     def bounding_box(self) -> Rect:

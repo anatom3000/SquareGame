@@ -14,36 +14,24 @@ from constants import *
 
 pygame.init()
 
-screen = pygame.display.set_mode(RESOLUTION)
+screen = pygame.display.set_mode(RESOLUTION, pygame.RESIZABLE)
 
 from obj_kinds import obj_kinds
-
+from level_parser import parse_level
 
 clock = pygame.time.Clock()
-
 viewport = Viewport(screen, zoom=9/4, position=np.array([200.0, GROUND_HEIGHT - 30 * 15]))
 
+level = Level(viewport, parse_level('assets/levels/stereomadness.lvl'))
+pygame.mixer.music.load('assets/songs/StereoMadness.mp3')
 
-def level_helper(kind: ObjectKind, spacing: (int, int), start: (int, int), n: (int, int)):
-    objects = []
-    for i in range(n):
-        objects.append(kind.new(np.array([15 + start[0] * 30 + spacing[0] * 30 * i, 105 + start[1] * 30 + spacing[1] * 30 * i])))
-
-    return objects
-
-things = level_helper(obj_kinds[1], (5, 1), (5, 0), 4)
-things += level_helper(obj_kinds[1], (5, 1), (5, 1), 4)
-things += level_helper(obj_kinds[8], (5, 0), (18, 0), 32)
-
-level = Level(viewport, things)
-
-paused = True
+paused = False
 t = 0
 done = False
 
 running = True
 while running:
-    dt = clock.tick(MAX_FPS) / 1000 * 0.25
+    dt = clock.tick(MAX_FPS) / 1000
     t += dt
 
     for ev in pygame.event.get():
@@ -52,7 +40,7 @@ while running:
             exit(0)
 
         if ev.type == KEYUP:
-            if ev.key == K_RETURN:
+            if ev.key == K_ESCAPE:
                 paused = not paused
 
             if ev.key == K_RIGHT:
@@ -71,8 +59,12 @@ while running:
     screen.fill(BACKGROUND_COLOR)
 
     if not paused:
+        if (not level.stopped) and (not pygame.mixer.music.get_busy()):
+            pygame.mixer.music.play()
+
         for _ in range(PHYSICS_SUBTICKS):
             level.tick(dt / PHYSICS_SUBTICKS)
+
 
     level.draw(viewport)
 
