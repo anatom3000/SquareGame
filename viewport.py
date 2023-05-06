@@ -13,7 +13,7 @@ def lerp(a, b, x):
 
 
 class Viewport:
-    def __init__(self, destination: pygame.Surface, zoom: float = 2.0, position: np.ndarray = None):
+    def __init__(self, destination: pygame.Surface, zoom: float = 1.0, position: np.ndarray = None):
         self.position = np.array([0.0, 0.0]) if position is None else position
         self.zoom = zoom
 
@@ -23,11 +23,8 @@ class Viewport:
         self.destination = destination
         self.resolution = np.array(destination.get_size())
 
-        self.position_smoothing_speed = 0.01
+        self.position_smoothing_speed = 1.0
         self.zoom_smoothing_speed = 0.5
-
-    def move(self, delta: np.ndarray):
-        self.target_position += delta
 
     def zoom_in(self, delta: float):
         self.target_zoom *= delta
@@ -61,6 +58,22 @@ class Viewport:
     @property
     def right(self):
         return (0.5 * self.resolution[0] + self.position[0]) / self.zoom
+
+    @property
+    def target_top(self):
+        return (0.5 * self.resolution[1] - self.target_position[1]) / self.target_zoom
+
+    @property
+    def target_bottom(self):
+        return -(0.5 * self.resolution[1] + self.target_position[1]) / self.target_zoom
+
+    @property
+    def target_left(self):
+        return (self.target_position[0] - 0.5 * self.resolution[0]) / self.target_zoom
+
+    @property
+    def target_right(self):
+        return (0.5 * self.resolution[0] + self.target_position[0]) / self.target_zoom
 
     def tick(self, dt: float):
         self.position = lerp(self.position, self.target_position, dt * self.position_smoothing_speed)

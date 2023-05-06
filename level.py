@@ -66,18 +66,20 @@ class Level:
     def tick_camera(self, dt: float):
         # self.viewport.move(np.array([dt * PLAYER_SPEED * self.viewport.zoom, 0.0]))
         self.viewport.position[0] += dt * PLAYER_SPEED * self.viewport.zoom
+        self.viewport.target_position[0] += dt * PLAYER_SPEED * self.viewport.zoom
 
-        player_distance_to_screen_top = self.viewport.top - self.player.position[1]
+        player_distance_to_screen_top = self.viewport.target_top - self.player.position[1]
         if player_distance_to_screen_top < CAMERA_TRIGGER_UP_ZONE:
             self.viewport.target_position[1] -= (CAMERA_TRIGGER_UP_ZONE + CAMERA_MOVE_DISTANCE)
 
-        player_distance_to_screen_bottom = self.player.position[1] - self.viewport.bottom
-        print(f"{player_distance_to_screen_bottom = }")
+        player_distance_to_screen_bottom = self.player.position[1] - self.viewport.target_bottom
 
         if player_distance_to_screen_bottom < CAMERA_TRIGGER_DOWN_ZONE:
             self.viewport.target_position[1] += (CAMERA_TRIGGER_DOWN_ZONE + CAMERA_MOVE_DISTANCE)
 
         self.viewport.tick(dt)
+
+
 
 
     def draw(self, viewport: Viewport):

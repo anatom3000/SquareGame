@@ -18,22 +18,19 @@ screen = pygame.display.set_mode(RESOLUTION)
 
 clock = pygame.time.Clock()
 
-viewport = Viewport(screen, zoom=2.0, position=np.array([200.0, GROUND_HEIGHT - 30 * 15]))
+viewport = Viewport(screen, zoom=9/4, position=np.array([200.0, GROUND_HEIGHT - 30 * 15]))
 
-spacing = (4, 1)
-first_block = (5, 0)
 
-things = []
-for i in range(100):
-    things.append(
-        Object(np.array([first_block[0] * 30 + spacing[0] * 30 * i, 105 + first_block[1] * 30 + spacing[1] * 30 * i])))
-    # things.append(Object(np.array([4.5*30+30*i, 135])))
-    # things.append(Object(np.array([30*i, 75])))
+def level_helper(spacing: (int, int), start: (int, int), n: (int, int)):
+    objects = []
+    for i in range(n):
+        objects.append(Object(np.array([15 + start[0] * 30 + spacing[0] * 30 * i, 105 + start[1] * 30 + spacing[1] * 30 * i])))
 
-# things.append(Object(np.array([4.5*30, 60])))
-# things.append(Object(np.array([45.0, 124.5])))
-# things.append(Object(np.array([60+75.0, 124.75])))
-# things.append(Object(np.array([60+105.0, 124.5])))
+    return objects
+
+
+things = level_helper((4, 1), (5, 0), 4)
+things += level_helper((1, 0), (18, 3), 32)
 
 level = Level(viewport, things)
 
@@ -73,15 +70,15 @@ while running:
     if not paused:
         for _ in range(PHYSICS_SUBTICKS):
             level.tick(dt / PHYSICS_SUBTICKS)
-    else:
-        level.viewport.tick(dt)
 
     level.draw(viewport)
 
-    if not done and t > 2.0:
-        level.viewport.move(np.array([100, 100]))
-        done = True
+    # if not done and t > 2.0:
+    #     level.viewport.target_position += 100.0
+    #     done = True
 
-    pygame.display.set_caption(f"FPS: {round(clock.get_fps())} - {pygame.mouse.get_pos()} - t = {round(t, 2)}")
+    mouse_pos = viewport.convert_position_from_screen(np.array(pygame.mouse.get_pos()))
+
+    pygame.display.set_caption(f"FPS: {round(clock.get_fps())} - {np.round(mouse_pos, 2)} - t = {np.round(level.player.position, 2)}")
 
     pygame.display.flip()
