@@ -42,7 +42,12 @@ class Level:
         small_player_box = self.player.small_bounding_box
         big_player_box = self.player.big_bounding_box
 
-        alignement_tolerance = -SOLID_ALIGNEMENT_TOLERANCE_ON_GROUND if self.player.recheck_for_ground else -SOLID_ALIGNEMENT_TOLERANCE
+        if self.player.recheck_for_ground:
+            alignement_tolerance = -SOLID_ALIGNEMENT_TOLERANCE_ON_GROUND
+        elif self.player.velocity[1] < 0.0:
+            alignement_tolerance = -SOLID_ALIGNEMENT_TOLERANCE
+        else:
+            alignement_tolerance = 0.0
 
         for obj in self.objects:
             if obj.kind.hitbox_kind == HitboxKind.SOLID:
