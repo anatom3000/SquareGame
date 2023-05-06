@@ -37,12 +37,12 @@ class Level:
             if self.player.position[0] >= self.player.check_for_ground_after:
                 self.player.on_ground = False
                 self.player.recheck_for_ground = True
+                self.player.check_for_ground_after = None
 
         small_player_box = self.player.small_bounding_box
         big_player_box = self.player.big_bounding_box
 
-        alignement_tolerance = (
-            -SOLID_ALIGNEMENT_TOLERANCE_ON_GROUND if self.player.recheck_for_ground else -SOLID_ALIGNEMENT_TOLERANCE)
+        alignement_tolerance = -SOLID_ALIGNEMENT_TOLERANCE_ON_GROUND if self.player.recheck_for_ground else -SOLID_ALIGNEMENT_TOLERANCE
 
         for obj in self.objects:
             if obj.kind.hitbox_kind == HitboxKind.SOLID:
