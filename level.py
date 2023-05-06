@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from object import Object
+from object import Object, HitboxKind
 from player import Player
 from constants import *
 from viewport import Viewport
@@ -41,27 +41,42 @@ class Level:
         small_player_box = self.player.small_bounding_box
         big_player_box = self.player.big_bounding_box
 
-        alignement_tolerance = (-SOLID_ALIGNEMENT_TOLERANCE_ON_GROUND if self.player.recheck_for_ground else -SOLID_ALIGNEMENT_TOLERANCE)
+        alignement_tolerance = (
+            -SOLID_ALIGNEMENT_TOLERANCE_ON_GROUND if self.player.recheck_for_ground else -SOLID_ALIGNEMENT_TOLERANCE)
 
         for obj in self.objects:
-            if big_player_box.collide_rect(obj.bounding_box):
-                distance_to_top = big_player_box.bottom - obj.bounding_box.top
-                if distance_to_top > alignement_tolerance:
-                    self.player.align_to_object(obj)
-                    self.player.on_ground = True
-                    if self.input_activated:
-                        self.player.jump()
-                    else:
-                        self.player.velocity[1] = 0.0
-
-                if small_player_box.collide_rect(obj.bounding_box):
-                    self.stop()
+            if obj.kind.hitbox_kind == HitboxKind.SOLID:
+                self.handle_solid(obj, alignement_tolerance, big_player_box, small_player_box)
+            elif obj.kind.hitbox_kind == HitboxKind.HAZARD:
+                self.handle_hazard(obj, big_player_box)
+            elif obj.kind.hitbox_kind == HitboxKind.DECORATION:
+                pass  # nothing to do
+            else:
+                raise RuntimeError("unreachable: unknown object kind")
 
         self.player.position += self.player.velocity * dt
 
         if self.player.position[1] < GROUND_HEIGHT + self.player.big_hitbox[1] / 2:
             self.player.position[1] = GROUND_HEIGHT + self.player.big_hitbox[1] / 2
             self.player.on_ground = True
+
+    def handle_solid(self, obj: Object, alignement_tolerance: float, big_player_box: Rect, small_player_box: Rect):
+        if big_player_box.collide_rect(obj.bounding_box):
+            distance_to_top = big_player_box.bottom - obj.bounding_box.top
+            if distance_to_top > alignement_tolerance:
+                self.player.align_to_object(obj)
+                self.player.on_ground = True
+                if self.input_activated:
+                    self.player.jump()
+                else:
+                    self.player.velocity[1] = 0.0
+
+            if small_player_box.collide_rect(obj.bounding_box):
+                self.stop()
+
+    def handle_hazard(self, obj: Object, big_player_box: Rect):
+        if big_player_box.collide_rect(obj.bounding_box):
+            self.stop()
 
     def tick_camera(self, dt: float):
         # self.viewport.move(np.array([dt * PLAYER_SPEED * self.viewport.zoom, 0.0]))

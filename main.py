@@ -32,7 +32,7 @@ def level_helper(kind: ObjectKind, spacing: (int, int), start: (int, int), n: (i
     return objects
 
 things = level_helper(obj_kinds[1], (4, 1), (5, 0), 4)
-things += level_helper(obj_kinds[1], (1, -0.25), (18, 3), 32)
+things += level_helper(obj_kinds[8], (1, -0.0625), (18, 3), 32)
 
 level = Level(viewport, things)
 
@@ -42,7 +42,7 @@ done = False
 
 running = True
 while running:
-    dt = clock.tick(MAX_FPS) / 1000 * 0.25
+    dt = clock.tick(MAX_FPS) / 1000
     t += dt
 
     for ev in pygame.event.get():
