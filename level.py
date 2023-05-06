@@ -14,10 +14,12 @@ class Level:
         self.viewport = viewport
 
         self.player = Player(position=np.array([0.0, 105]))
-        self.objects = objects
+        self.objects = sorted(objects, key=lambda x: x.position[0])
 
         self.input_activated = False
         self.stopped = False
+
+        self.first_right_invisible_object = None
 
     def tick(self, dt: float):
         if self.stopped:
@@ -50,7 +52,20 @@ class Level:
         else:
             alignment_tolerance = 0.0
 
-        for obj in self.objects:
+        camera_left = self.viewport.left
+        camera_right = self.viewport.right
+
+        last_left_invisible_object = None
+
+        for i, obj in enumerate(self.objects):
+            if camera_left > obj.bounding_box.right:
+                last_left_invisible_object = i
+                continue
+
+            if camera_right < obj.bounding_box.left:
+                first_right_invisible_object = i
+                break  # objects are sorted by x position
+
             if obj.kind.hitbox_kind == HitboxKind.SOLID:
                 self.handle_solid(obj, alignment_tolerance, big_player_box, small_player_box)
             elif obj.kind.hitbox_kind == HitboxKind.HAZARD:
@@ -60,6 +75,11 @@ class Level:
             else:
                 raise RuntimeError("unreachable: unknown object kind")
 
+        if last_left_invisible_object is not None:
+            self.objects = self.objects[last_left_invisible_object + 1:]
+            if self.first_right_invisible_object is not None:
+                self.first_right_invisible_object -= last_left_invisible_object
+
         self.player.position += self.player.velocity * dt
 
         if self.player.position[1] < GROUND_HEIGHT + self.player.big_hitbox[1] / 2:
@@ -67,8 +87,10 @@ class Level:
             self.player.on_ground = True
 
     def handle_solid(self, obj: Object, alignment_tolerance: float, big_player_box: Rect, small_player_box: Rect):
-        if big_player_box.collide_rect(obj.bounding_box):
-            distance_to_top = big_player_box.bottom - obj.bounding_box.top
+        obj_box = obj.bounding_box
+
+        if big_player_box.collide_rect(obj_box):
+            distance_to_top = big_player_box.bottom - obj_box.top
             if distance_to_top > alignment_tolerance:
                 self.player.align_to_object(obj)
                 self.player.on_ground = True
@@ -77,7 +99,7 @@ class Level:
                 else:
                     self.player.velocity[1] = 0.0
 
-            if small_player_box.collide_rect(obj.bounding_box):
+            if small_player_box.collide_rect(obj_box):
                 self.stop()
 
     def handle_hazard(self, obj: Object, big_player_box: Rect):
@@ -101,7 +123,7 @@ class Level:
         self.viewport.tick(dt)
 
     def draw(self, viewport: Viewport):
-        for obj in self.objects:
+        for obj in self.objects[:self.first_right_invisible_object]:
             obj.draw(viewport)
 
         self.player.draw(viewport)

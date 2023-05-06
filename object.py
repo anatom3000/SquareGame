@@ -34,12 +34,11 @@ class Object:
         self.position = position
         self.kind = kind
 
-    def draw(self, viewport: Viewport):
-        viewport.blit(self.kind.texture, Rect(self.position, self.kind.texture_size))
-        # viewport.draw_rect(OBJECT_COLOR, self.bounding_box, width=0.5)
+        self.bounding_box = Rect(self.position, self.kind.hitbox)
+        self.display_box = Rect(self.position, self.kind.texture_size)
 
-    @property
-    def bounding_box(self) -> Rect:
-        return Rect(self.position, self.kind.hitbox)
+    def draw(self, viewport: Viewport):
+        viewport.blit(self.kind.texture, self.display_box)
+        # viewport.draw_rect(OBJECT_COLOR, self.bounding_box, width=0.5)
 
 

@@ -20,10 +20,12 @@ from obj_kinds import obj_kinds
 from level_parser import parse_level
 
 clock = pygame.time.Clock()
-viewport = Viewport(screen, zoom=9/4, position=np.array([200.0, GROUND_HEIGHT - 30 * 15]))
+viewport = Viewport(screen, zoom=9 / 4, position=np.array([200.0, GROUND_HEIGHT - 30 * 15]))
 
 level = Level(viewport, parse_level('assets/levels/stereomadness.lvl'))
 pygame.mixer.music.load('assets/songs/StereoMadness.mp3')
+pygame.mixer.music.play()
+pygame.mixer.music.pause()
 
 paused = False
 t = 0
@@ -60,11 +62,13 @@ while running:
 
     if not paused:
         if (not level.stopped) and (not pygame.mixer.music.get_busy()):
-            pygame.mixer.music.play()
+            pygame.mixer.music.unpause()
 
         for _ in range(PHYSICS_SUBTICKS):
             level.tick(dt / PHYSICS_SUBTICKS)
-
+    else:
+        if pygame.mixer.music.get_busy():
+            pygame.mixer.music.pause()
 
     level.draw(viewport)
 
@@ -74,6 +78,7 @@ while running:
 
     mouse_pos = viewport.convert_position_from_screen(np.array(pygame.mouse.get_pos()))
 
-    pygame.display.set_caption(f"FPS: {round(clock.get_fps())} - {np.round(mouse_pos, 2)} - t = {np.round(level.player.position, 2)}")
+    pygame.display.set_caption(
+        f"FPS: {round(clock.get_fps())}")
 
     pygame.display.flip()

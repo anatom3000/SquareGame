@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import cache
 from math import tanh
 
 import numpy as np
@@ -11,6 +12,9 @@ from rect import Rect
 def lerp(a, b, x):
     return (1 - x) * a + x * b
 
+@cache
+def scale_texture(source: pygame.Surface, rect_size: np.ndarray) -> pygame.Surface:
+    return pygame.transform.scale(source, rect_size)
 
 class Viewport:
     def __init__(self, destination: pygame.Surface, zoom: float = 1.0, position: np.ndarray = None):
@@ -93,7 +97,7 @@ class Viewport:
     def blit(self, source: pygame.Surface, rect: Rect):
         rect = self.convert_rect(rect)
 
-        self.destination.blit(pygame.transform.scale(source, rect.size), rect)
+        self.destination.blit(scale_texture(source, rect.size), rect)
 
     def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float = 0.0):
         rect = self.convert_rect(rect)

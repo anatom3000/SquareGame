@@ -1,7 +1,7 @@
 import numpy as np
 
 RESOLUTION = np.array([1280, 720])
-MAX_FPS = 60
+MAX_FPS = 240
 BACKGROUND_COLOR = (40, 125, 255)
 # BACKGROUND_COLOR = (0, 0, 0)
 
