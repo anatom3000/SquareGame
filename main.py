@@ -6,7 +6,7 @@ from pygame.locals import *
 import numpy as np
 
 from level import Level
-from object import Object
+from object import Object, ObjectKind, HitboxKind
 from viewport import Viewport
 from rect import Rect
 
@@ -16,21 +16,23 @@ pygame.init()
 
 screen = pygame.display.set_mode(RESOLUTION)
 
+from obj_kinds import obj_kinds
+
+
 clock = pygame.time.Clock()
 
 viewport = Viewport(screen, zoom=9/4, position=np.array([200.0, GROUND_HEIGHT - 30 * 15]))
 
 
-def level_helper(spacing: (int, int), start: (int, int), n: (int, int)):
+def level_helper(kind: ObjectKind, spacing: (int, int), start: (int, int), n: (int, int)):
     objects = []
     for i in range(n):
-        objects.append(Object(np.array([15 + start[0] * 30 + spacing[0] * 30 * i, 105 + start[1] * 30 + spacing[1] * 30 * i])))
+        objects.append(kind.new(np.array([15 + start[0] * 30 + spacing[0] * 30 * i, 105 + start[1] * 30 + spacing[1] * 30 * i])))
 
     return objects
 
-
-things = level_helper((4, 1), (5, 0), 4)
-things += level_helper((1, 0), (18, 3), 32)
+things = level_helper(obj_kinds[1], (4, 1), (5, 0), 4)
+things += level_helper(obj_kinds[1], (1, -0.25), (18, 3), 32)
 
 level = Level(viewport, things)
 
@@ -40,7 +42,7 @@ done = False
 
 running = True
 while running:
-    dt = clock.tick(MAX_FPS) / 1000
+    dt = clock.tick(MAX_FPS) / 1000 * 0.25
     t += dt
 
     for ev in pygame.event.get():

@@ -40,6 +40,14 @@ class Viewport:
     def convert_distance(self, distance: float | np.ndarray) -> float | np.ndarray:
         return distance * self.zoom
 
+    def convert_rect(self, rect: Rect) -> pygame.Rect:
+        pg_rect = pygame.Rect((0, 0, 0, 0))
+
+        pg_rect.size = self.convert_distance(rect.size)
+        pg_rect.center = self.convert_position(rect.center)
+
+        return pg_rect
+
     def convert_position_from_screen(self, position: np.array):
         return ((position + self.position - self.resolution / 2) / self.zoom) * (1, -1)
 
@@ -82,23 +90,17 @@ class Viewport:
         self.position *= delta_zoom
         self.zoom *= delta_zoom
 
-    def blit(self, source: pygame.Surface, center: np.ndarray, size: np.ndarray):
-        rect = source.get_rect()
+    def blit(self, source: pygame.Surface, rect: Rect):
+        rect = self.convert_rect(rect)
 
-        rect.size = self.convert_distance(size)
-        rect.center = self.convert_position(center)
-
-        self.destination.blit(source, rect)
+        self.destination.blit(pygame.transform.scale(source, rect.size), rect)
 
     def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float = 0.0):
-        pg_rect = pygame.Rect((0, 0, 0, 0))
-
-        pg_rect.size = self.convert_distance(rect.size)
-        pg_rect.center = self.convert_position(rect.center)
+        rect = self.convert_rect(rect)
 
         if width == 0.0:
             width = 0
         else:
             width = int(self.convert_distance(width))
 
-        pygame.draw.rect(self.destination, color, pg_rect, width)
+        pygame.draw.rect(self.destination, color, rect, width)

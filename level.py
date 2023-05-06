@@ -79,9 +79,6 @@ class Level:
 
         self.viewport.tick(dt)
 
-
-
-
     def draw(self, viewport: Viewport):
         for obj in self.objects:
             obj.draw(viewport)

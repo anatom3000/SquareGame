@@ -35,8 +35,8 @@ class Player:
         return Rect(self.position, self.big_hitbox)
 
     def align_to_object(self, obj: Object):
-        self.position[1] = self.big_hitbox[1] / 2 + obj.position[1] + obj.hitbox[1] / 2
-        self.check_for_ground_after = obj.position[0] + obj.hitbox[0] / 2 + self.big_hitbox[0] / 2
+        self.position[1] = self.big_hitbox[1] / 2 + obj.position[1] + obj.kind.hitbox[1] / 2
+        self.check_for_ground_after = obj.position[0] + obj.kind.hitbox[0] / 2 + self.big_hitbox[0] / 2
 
     def jump(self):
         if not self.on_ground:
