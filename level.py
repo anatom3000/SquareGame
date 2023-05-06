@@ -43,15 +43,15 @@ class Level:
         big_player_box = self.player.big_bounding_box
 
         if self.player.recheck_for_ground:
-            alignement_tolerance = -SOLID_ALIGNEMENT_TOLERANCE_ON_GROUND
+            alignment_tolerance = -SOLID_ALIGNMENT_TOLERANCE_ON_GROUND
         elif self.player.velocity[1] < 0.0:
-            alignement_tolerance = -SOLID_ALIGNEMENT_TOLERANCE
+            alignment_tolerance = -SOLID_ALIGNMENT_TOLERANCE
         else:
-            alignement_tolerance = 0.0
+            alignment_tolerance = 0.0
 
         for obj in self.objects:
             if obj.kind.hitbox_kind == HitboxKind.SOLID:
-                self.handle_solid(obj, alignement_tolerance, big_player_box, small_player_box)
+                self.handle_solid(obj, alignment_tolerance, big_player_box, small_player_box)
             elif obj.kind.hitbox_kind == HitboxKind.HAZARD:
                 self.handle_hazard(obj, big_player_box)
             elif obj.kind.hitbox_kind == HitboxKind.DECORATION:
@@ -65,10 +65,10 @@ class Level:
             self.player.position[1] = GROUND_HEIGHT + self.player.big_hitbox[1] / 2
             self.player.on_ground = True
 
-    def handle_solid(self, obj: Object, alignement_tolerance: float, big_player_box: Rect, small_player_box: Rect):
+    def handle_solid(self, obj: Object, alignment_tolerance: float, big_player_box: Rect, small_player_box: Rect):
         if big_player_box.collide_rect(obj.bounding_box):
             distance_to_top = big_player_box.bottom - obj.bounding_box.top
-            if distance_to_top > alignement_tolerance:
+            if distance_to_top > alignment_tolerance:
                 self.player.align_to_object(obj)
                 self.player.on_ground = True
                 if self.input_activated:
