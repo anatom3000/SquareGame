@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pygame
 
-from objects import Object
+from object import Object
 from viewport import Viewport
 from rect import Rect
 

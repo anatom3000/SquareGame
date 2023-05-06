@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 import numpy as np
 
-from objects import Object
+from object import Object
 from player import Player
 from constants import *
 from viewport import Viewport
 
 
 class Level:
-    def __init__(self, objects: list[Object]):
-        self.player = Player(position=np.array([0.0, 105]))
+    def __init__(self, viewport: Viewport, objects: list[Object]):
+        self.viewport = viewport
 
+        self.player = Player(position=np.array([0.0, 105]))
         self.objects = objects
 
         self.input_activated = False
@@ -18,6 +21,8 @@ class Level:
     def tick(self, dt: float):
         if self.stopped:
             return
+
+        self.tick_camera(dt)
 
         self.player.velocity[0] = PLAYER_SPEED
 
@@ -58,6 +63,21 @@ class Level:
             self.player.position[1] = GROUND_HEIGHT + self.player.big_hitbox[1] / 2
             self.player.on_ground = True
 
+    def tick_camera(self, dt: float):
+        # self.viewport.move(np.array([dt * PLAYER_SPEED * self.viewport.zoom, 0.0]))
+        self.viewport.position[0] += dt * PLAYER_SPEED * self.viewport.zoom
+
+        player_distance_to_screen_top = self.viewport.top - self.player.position[1]
+        if player_distance_to_screen_top < CAMERA_TRIGGER_UP_ZONE:
+            self.viewport.target_position[1] -= (CAMERA_TRIGGER_UP_ZONE + CAMERA_MOVE_DISTANCE)
+
+        player_distance_to_screen_bottom = self.player.position[1] - self.viewport.bottom
+        print(f"{player_distance_to_screen_bottom = }")
+
+        if player_distance_to_screen_bottom < CAMERA_TRIGGER_DOWN_ZONE:
+            self.viewport.target_position[1] += (CAMERA_TRIGGER_DOWN_ZONE + CAMERA_MOVE_DISTANCE)
+
+        self.viewport.tick(dt)
 
 
     def draw(self, viewport: Viewport):
