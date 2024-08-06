@@ -27,8 +27,16 @@ def parse_level_string(txt: str):
         kind = obj_kinds[int(obj['1'])]
         x = float(obj.get('2', '0.0'))
         y = float(obj.get('3', '0.0'))+GROUND_HEIGHT
+        hflip = bool(obj.get('4', False))
+        vflip = bool(obj.get('5', False))
+        rotation = float(obj.get('6', 0.0))
 
-        level_objects.append(kind.new(np.array([x, y])))
+        level_objects.append(kind.new(
+            position=np.array([x, y]),
+            hflip=hflip,
+            vflip=vflip,
+            rotation=rotation,
+        ))
 
     return level_objects
 

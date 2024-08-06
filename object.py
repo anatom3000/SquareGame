@@ -25,20 +25,36 @@ class ObjectKind:
     hitbox_kind: HitboxKind
     hitbox: np.ndarray
 
-    def new(self, position: np.ndarray):
-        return Object(self, position)
+    def new(self, **kwargs):
+        return Object(kind=self, **kwargs)
+
+import functools
 
 
+@functools.cache
+def rotate_texture(texture, angle, hflip, vflip):
+    texture = pygame.transform.flip(texture, hflip, vflip)
+    texture = pygame.transform.rotate(texture, -angle)
+
+    return texture
+
+
+@dataclass
 class Object:
-    def __init__(self, kind: ObjectKind, position: np.ndarray):
-        self.position = position
-        self.kind = kind
+    kind: ObjectKind
+    position: np.ndarray
+    hflip: bool
+    vflip: bool
+    rotation: float
 
+    def __post_init__(self):
         self.bounding_box = Rect(self.position, self.kind.hitbox)
         self.display_box = Rect(self.position, self.kind.texture_size)
 
     def draw(self, viewport: Viewport):
-        viewport.blit(self.kind.texture, self.display_box)
+        rotated = rotate_texture(self.kind.texture, self.rotation, self.hflip, self.vflip)
+
+        viewport.blit(rotated, self.display_box)
         # viewport.draw_rect(OBJECT_COLOR, self.bounding_box, width=0.5)
 
 

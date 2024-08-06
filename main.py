@@ -48,6 +48,9 @@ while running:
             if ev.key == K_RIGHT:
                 level.tick(dt / PHYSICS_SUBTICKS)
 
+            if ev.key == K_n:
+                level.noclip = not level.noclip
+
         if ev.type == MOUSEBUTTONDOWN:
             # 1 = left click; 2 = middle click; 3 = right click; 4 = scroll up; 5 = scroll down
             if ev.button == 1:

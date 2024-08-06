@@ -18,6 +18,7 @@ class Level:
 
         self.input_activated = False
         self.stopped = False
+        self.noclip = False
 
         self.first_right_invisible_object = None
 
@@ -129,5 +130,6 @@ class Level:
         self.player.draw(viewport)
 
     def stop(self):
-        self.stopped = True
-        pygame.mixer.music.stop()
+        if not self.noclip:
+            self.stopped = True
+            pygame.mixer.music.stop()
