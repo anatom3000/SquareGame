@@ -10,20 +10,29 @@ from viewport import Viewport
 
 
 class Level:
-    def __init__(self, viewport: Viewport, objects: list[Object]):
-        self.viewport = viewport
+    def __init__(self, screen, objects: list[Object]):
+        self.screen = screen
+        self.all_objects = sorted(objects, key=lambda x: x.position[0])
+        self.restart()
 
-        self.player = Player(position=np.array([0.0, 105]))
-        self.objects = sorted(objects, key=lambda x: x.position[0])
-
-        self.input_activated = False
-        self.stopped = False
         self.noclip = False
 
+    def restart(self):
+        self.viewport = Viewport(self.screen, zoom=9 / 4, position=np.array([200.0, GROUND_HEIGHT - 30 * 15]))
+        self.player = Player(position=np.array([0.0, 105]))
+        self.objects = self.all_objects.copy()
+
+        self.stop_time = None
+        self.input_activated = False
         self.first_right_invisible_object = None
 
     def tick(self, dt: float):
-        if self.stopped:
+        if self.stop_time is not None:
+            if self.stop_time >= RESTART_DELAY:
+                self.stop_time = None
+                self.restart()
+            else:
+                self.stop_time += dt
             return
 
         self.tick_camera(dt)
@@ -123,13 +132,13 @@ class Level:
 
         self.viewport.tick(dt)
 
-    def draw(self, viewport: Viewport):
+    def draw(self):
         for obj in self.objects[:self.first_right_invisible_object]:
-            obj.draw(viewport)
+            obj.draw(self.viewport)
 
-        self.player.draw(viewport)
+        self.player.draw(self.viewport)
 
     def stop(self):
         if not self.noclip:
-            self.stopped = True
+            self.stop_time = 0.0
             pygame.mixer.music.stop()
