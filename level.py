@@ -45,6 +45,8 @@ class Level:
         if self.input_activated:
             self.player.jump()
 
+        self.player.rotate(dt)
+
         self.player.recheck_for_ground = False
         if self.player.check_for_ground_after is not None:
             if self.player.position[0] >= self.player.check_for_ground_after:
@@ -94,16 +96,17 @@ class Level:
 
         if self.player.position[1] < GROUND_HEIGHT + self.player.big_hitbox[1] / 2:
             self.player.position[1] = GROUND_HEIGHT + self.player.big_hitbox[1] / 2
-            self.player.on_ground = True
+            self.player.land()
+
 
     def handle_solid(self, obj: Object, alignment_tolerance: float, big_player_box: Rect, small_player_box: Rect):
         obj_box = obj.bounding_box
 
         if big_player_box.collide_rect(obj_box):
             distance_to_top = big_player_box.bottom - obj_box.top
-            if distance_to_top > alignment_tolerance:
+            if distance_to_top > alignment_tolerance and not self.player.on_ground:
                 self.player.align_to_object(obj)
-                self.player.on_ground = True
+                self.player.land()
                 if self.input_activated:
                     self.player.jump()
                 else:

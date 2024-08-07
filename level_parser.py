@@ -1,7 +1,11 @@
 import numpy as np
+import base64
+import zlib
 
-from obj_kinds import obj_kinds
-from constants import *
+
+from object import object_kinds
+from constants import GROUND_HEIGHT
+
 
 def parse_level_string(txt: str):
     object_strings = txt.split(';')
@@ -21,10 +25,10 @@ def parse_level_string(txt: str):
 
     level_objects = []
     for obj in objects:
-        if ('1' not in obj.keys()) or (int(obj['1']) not in obj_kinds.keys()):
+        if ('1' not in obj.keys()) or (int(obj['1']) not in object_kinds.keys()):
             continue
 
-        kind = obj_kinds[int(obj['1'])]
+        kind = object_kinds[int(obj['1'])]
         x = float(obj.get('2', '0.0'))
         y = float(obj.get('3', '0.0'))+GROUND_HEIGHT
         hflip = bool(obj.get('4', False))
@@ -43,4 +47,7 @@ def parse_level_string(txt: str):
 
 def parse_level(path: str):
     with open(path) as f:
-        return parse_level_string(f.read())
+        base64_decoded = base64.urlsafe_b64decode(f.read().encode())
+        # window_bits = 15 | 32 will autodetect gzip or not
+        decompressed = zlib.decompress(base64_decoded, 15 | 32)
+        return parse_level_string(decompressed.decode())

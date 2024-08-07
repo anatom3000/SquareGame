@@ -5,23 +5,22 @@ from pygame.locals import *
 
 import numpy as np
 
-from level import Level
-from object import Object, ObjectKind, HitboxKind
-from viewport import Viewport
-from rect import Rect
-
-from constants import *
+from constants import RESOLUTION, MAX_FPS, BACKGROUND_COLOR, PHYSICS_SUBTICKS
 
 pygame.init()
 
 screen = pygame.display.set_mode(RESOLUTION, pygame.RESIZABLE)
 
-from obj_kinds import obj_kinds
+from level import Level
+from viewport import Viewport
+from rect import Rect
+
+
 from level_parser import parse_level
 
 clock = pygame.time.Clock()
 
-level = Level(screen, parse_level('assets/levels/stereomadness.lvl'))
+level = Level(screen, parse_level('assets/Resources/levels/test.lvl'))
 pygame.mixer.music.load('assets/songs/StereoMadness.mp3')
 pygame.mixer.music.play()
 pygame.mixer.music.pause()
@@ -50,6 +49,13 @@ while running:
 
             if ev.key == K_n:
                 level.noclip = not level.noclip
+
+            if ev.key == K_h:
+                level.player.render_hitbox = not level.player.render_hitbox
+
+            if ev.key == K_r:
+                level.restart()
+            # 1 = left click; 2 = middle click; 
 
         if ev.type == MOUSEBUTTONDOWN:
             # 1 = left click; 2 = middle click; 3 = right click; 4 = scroll up; 5 = scroll down

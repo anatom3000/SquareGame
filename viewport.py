@@ -12,9 +12,19 @@ from rect import Rect
 def lerp(a, b, x):
     return (1 - x) * a + x * b
 
+
 @cache
 def scale_texture(source: pygame.Surface, rect_size: np.ndarray) -> pygame.Surface:
     return pygame.transform.scale(source, rect_size)
+
+
+@cache
+def rotate_texture(texture, angle, hflip, vflip):
+    texture = pygame.transform.flip(texture, hflip, vflip)
+    texture = pygame.transform.rotate(texture, -angle)
+
+    return texture
+
 
 class Viewport:
     def __init__(self, destination: pygame.Surface, zoom: float = 1.0, position: np.ndarray = None):
@@ -46,9 +56,12 @@ class Viewport:
 
     def convert_rect(self, rect: Rect) -> pygame.Rect:
         pg_rect = pygame.Rect((0, 0, 0, 0))
-
-        pg_rect.size = self.convert_distance(rect.size)
-        pg_rect.center = self.convert_position(rect.center)
+        
+        try:
+            pg_rect.size = self.convert_distance(rect.size)
+            pg_rect.center = self.convert_position(rect.center)
+        except TypeError:
+            pass
 
         return pg_rect
 
@@ -98,6 +111,17 @@ class Viewport:
         rect = self.convert_rect(rect)
 
         self.destination.blit(scale_texture(source, rect.size), rect)
+
+    def blit_rotated(self, source: pygame.Surface, rect: Rect, angle: float, hflip: bool, vflip: bool):
+        old_rect = source.get_rect().copy()
+        source = rotate_texture(source, angle, hflip, vflip)
+        new_rect = source.get_rect().copy()
+
+        rect.size[0] *= new_rect.w / old_rect.w
+        rect.size[1] *= new_rect.h / old_rect.h
+
+        self.blit(source, rect)
+        
 
     def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float = 0.0):
         rect = self.convert_rect(rect)
