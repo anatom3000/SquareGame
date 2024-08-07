@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Optional
 from dataclasses import dataclass
 from enum import Enum
 
@@ -14,18 +15,24 @@ class HitboxKind(Enum):
     SOLID = 1
     HAZARD = 2
     DECORATION = 3
-    SPECIAL = 4
+    YELLOW_ORB = 4
+    YELLOW_PAD = 5
+    BLUE_PORTAL = 6
+    YELLOW_PORTAL = 7
 
 
 @dataclass
 class ObjectKind:
-    texture: pygame.Surface
-    texture_size: np.ndarray
+    texture_path: pygame.Surface
     hitbox_kind: HitboxKind
-    hitbox: np.ndarray
+    texture_size: Optional[np.ndarray] = None
+    hitbox: Optional[np.ndarray] = None
 
     def new(self, **kwargs):
         return Object(kind=self, **kwargs)
+
+    def __post_init__(self):
+        self.texture = pygame.image.load(self.texture_path).convert_alpha()
 
 
 @dataclass
@@ -40,81 +47,101 @@ class Object:
         self.bounding_box = Rect(self.position, self.kind.hitbox)
         self.display_box = Rect(self.position, self.kind.texture_size)
 
-    def draw(self, viewport: Viewport):
+    def draw(self, viewport: Viewport, show_hitbox: bool):
         viewport.blit_rotated(self.kind.texture, self.display_box, self.rotation, self.hflip, self.vflip)
-        # viewport.draw_rect(OBJECT_COLOR, self.bounding_box, width=0.5)
+
+        if show_hitbox:
+            if self.kind.hitbox_kind == HitboxKind.SOLID:
+                color = (0, 0, 255)
+            elif self.kind.hitbox_kind == HitboxKind.HAZARD:
+                color = (255, 0, 0)
+            else:
+                color = (0, 255, 0)
+
+            viewport.draw_rect(color, self.bounding_box, width=1.5)
 
 
 object_kinds = {
-    1: ObjectKind(
-        pygame.image.load('assets/default_block.png').convert_alpha(),
-        np.array([30, 30]),
+    1: ObjectKind( # default block
+        "assets/default_block.png",
         HitboxKind.SOLID,
-        np.array([30, 30])
     ),
-
     2: ObjectKind( # flat deco block
-        pygame.image.load('assets/flat_deco_block.png').convert_alpha(),
-        np.array([30, 30]),
+        "assets/flat_deco_block.png",
         HitboxKind.SOLID,
-        np.array([30, 30])
     ),
-
     3: ObjectKind( # outer corner deco block
-        pygame.image.load('assets/outer_corner_deco_block.png').convert_alpha(),
-        np.array([30, 30]),
+        "assets/outer_corner_deco_block.png",
         HitboxKind.SOLID,
-        np.array([30, 30])
     ),
     4: ObjectKind( # inner corner deco block
-        pygame.image.load('assets/inner_corner_deco_block.png').convert_alpha(),
-        np.array([30, 30]),
+        "assets/inner_corner_deco_block.png",
         HitboxKind.SOLID,
-        np.array([30, 30])
     ),
     5: ObjectKind( # inner deco block
-        pygame.image.load('assets/inner_deco_block.png').convert_alpha(),
-        np.array([30, 30]),
+        "assets/inner_deco_block.png",
         HitboxKind.DECORATION,
-        np.array([30, 30])
+        np.array([30, 30]),
     ),
     6: ObjectKind( # pipe end deco block
-        pygame.image.load('assets/pipe_end_deco_block.png').convert_alpha(),
-        np.array([30, 30]),
+        "assets/pipe_end_deco_block.png",
         HitboxKind.SOLID,
-        np.array([30, 30])
     ),
     7: ObjectKind( # pipe deco block
-        pygame.image.load('assets/pipe_deco_block.png').convert_alpha(),
-        np.array([30, 30]),
+        "assets/pipe_deco_block.png",
         HitboxKind.SOLID,
-        np.array([30, 30])
     ),
-
-    40: ObjectKind( # default slab
-        pygame.image.load('assets/default_slab.png').convert_alpha(),
-        np.array([30, 14]),
-        HitboxKind.SOLID,
-        np.array([30, 14])
-    ),
-
     8: ObjectKind( # default spike
-        pygame.image.load('assets/default_spike.png').convert_alpha(),
-        np.array([30, 30]),
+        "assets/default_spike.png",
         HitboxKind.HAZARD,
-        np.array([6, 12])
+        np.array([30, 30]),
+    ),
+    9: ObjectKind( # ground spike
+        "assets/ground_spike.png",
+        HitboxKind.HAZARD,
+        np.array([30, 27]),
+    ),
+    10: ObjectKind( # blue portal
+        "assets/default_block.png",
+        HitboxKind.BLUE_PORTAL,
+    ),
+    11: ObjectKind( # yellow portal
+        "assets/default_block.png",
+        HitboxKind.YELLOW_PORTAL,
+    ),
+    35: ObjectKind(
+        "assets/yellow_pad.png",
+        HitboxKind.YELLOW_PAD,
+    ),
+    36: ObjectKind( # yellow orb
+        "assets/yellow_orb.png",
+        HitboxKind.YELLOW_ORB,
+        np.array([30, 30]),
     ),
     39: ObjectKind( # little spike
-        pygame.image.load('assets/little_spike.png').convert_alpha(),
+        "assets/little_spike.png",
+        HitboxKind.HAZARD,
         np.array([30, 14]),
-        HitboxKind.HAZARD,
-        np.array([6, 5.6])
     ),
-
-    9: ObjectKind( # ground spike
-        pygame.image.load('assets/ground_spike.png').convert_alpha(),
-        np.array([30, 27]),
-        HitboxKind.HAZARD,
-        np.array([9.0, 10.8]),
-    )
+    40: ObjectKind( # default slab
+        "assets/default_slab.png",
+        HitboxKind.SOLID,
+    ),
 }
+
+with open("assets/hitboxes.json") as f:
+    import json
+    hitboxes = json.load(f)
+    for id in object_kinds.keys():
+        if object_kinds[id].hitbox is not None:
+            continue
+
+        box = hitboxes.get(str(id))
+        if box is None:
+            object_kinds[id].hitbox = np.array([0.0, 0.0])
+            continue
+
+        object_kinds[id].hitbox = np.array([box["w"], box["h"]])
+        if object_kinds[id].texture_size is None:
+            object_kinds[id].texture_size = object_kinds[id].hitbox
+

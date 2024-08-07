@@ -14,25 +14,26 @@ screen = pygame.display.set_mode(RESOLUTION, pygame.RESIZABLE)
 from level import Level
 from viewport import Viewport
 from rect import Rect
-
-
 from level_parser import parse_level
 
 clock = pygame.time.Clock()
 
-level = Level(screen, parse_level('assets/Resources/levels/test.lvl'))
-pygame.mixer.music.load('assets/songs/StereoMadness.mp3')
-pygame.mixer.music.play()
-pygame.mixer.music.pause()
+i = 1
 
+level = Level(
+    screen, 
+    parse_level(f'assets/Resources/levels/{i}.lvl'),
+    'assets/songs/StereoMadness.mp3'
+)
 
 paused = False
 t = 0
+speed = 1.0
 done = False
 
 running = True
 while running:
-    dt = clock.tick(MAX_FPS) / 1000
+    dt = speed * clock.tick(MAX_FPS) / 1000
     t += dt
 
     for ev in pygame.event.get():
@@ -51,21 +52,52 @@ while running:
                 level.noclip = not level.noclip
 
             if ev.key == K_h:
-                level.player.render_hitbox = not level.player.render_hitbox
+                level.show_hitboxes = not level.show_hitboxes
 
             if ev.key == K_r:
                 level.restart()
-            # 1 = left click; 2 = middle click; 
+
+            if ev.key == K_SPACE or ev.key == K_UP:
+                level.tap()
+
+            if ev.key == K_LEFT:
+                i -= 1
+                level = Level(
+                    screen, 
+                    parse_level(f'assets/Resources/levels/{i}.lvl'),
+                    'assets/songs/StereoMadness.mp3'
+                )
+
+            if ev.key == K_RIGHT:
+                i += 1
+                level = Level(
+                    screen, 
+                    parse_level(f'assets/Resources/levels/{i}.lvl'),
+                    'assets/songs/StereoMadness.mp3'
+                )
+
+            if ev.key == K_f:
+                level.player.flipped = not level.player.flipped
+                level.player.on_ground = False
+
+            if ev.key == K_t:
+                speed /= 2.0
+            if ev.key == K_y:
+                speed *= 2.0
+
+        if ev.type == KEYDOWN:
+            if ev.key == K_SPACE or ev.key == K_UP:
+                level.release()
 
         if ev.type == MOUSEBUTTONDOWN:
             # 1 = left click; 2 = middle click; 3 = right click; 4 = scroll up; 5 = scroll down
             if ev.button == 1:
-                level.input_activated = True
+                level.tap()
 
         if ev.type == MOUSEBUTTONUP:
             # 1 = left click; 2 = middle click; 3 = right click; 4 = scroll up; 5 = scroll down
             if ev.button == 1:
-                level.input_activated = False
+                level.release()
 
     screen.fill(BACKGROUND_COLOR)
 

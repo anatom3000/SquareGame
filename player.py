@@ -9,7 +9,7 @@ from object import Object
 from viewport import Viewport
 from rect import Rect
 
-from constants import PLAYER_COLOR, JUMP_VELOCITY
+from constants import PLAYER_COLOR, JUMP_VELOCITY, PAD_JUMP_VELOCITY
 
 gdicons.set_resources_path("./assets/Resources")
 
@@ -34,16 +34,16 @@ class Player:
         ))
 
         self.on_ground = True
+        self.flipped = False
         self.check_for_ground_after: Optional[float] = None
         self.recheck_for_ground = False
         
-        self.render_hitbox = False
         self.small_hitbox = np.array([9.0, 9.0])
         self.big_hitbox = np.array([30.0, 30.0])
 
-    def draw(self, viewport: Viewport):
+    def draw(self, viewport: Viewport, show_hitbox: bool):
         viewport.blit_rotated(self.texture, self.big_bounding_box, self.rotation, False, False)
-        if self.render_hitbox:
+        if show_hitbox:
             viewport.draw_rect(PLAYER_COLOR, self.small_bounding_box, width=1.5)
             viewport.draw_rect(PLAYER_COLOR, self.big_bounding_box, width=1.5)
 
@@ -55,16 +55,19 @@ class Player:
     def big_bounding_box(self) -> Rect:
         return Rect(self.position, self.big_hitbox)
 
+    @property
+    def sign(self):
+        return -1 if self.flipped else 1
+
     def align_to_object(self, obj: Object):
-        self.position[1] = self.big_hitbox[1] / 2 + obj.position[1] + obj.kind.hitbox[1] / 2
+        self.position[1] = obj.position[1] + self.sign * self.big_hitbox[1] / 2 + self.sign * obj.kind.hitbox[1] / 2
         self.check_for_ground_after = obj.position[0] + obj.kind.hitbox[0] / 2 + self.big_hitbox[0] / 2
 
     def rotate(self, dt: float):
         self.rotation %= 360.0
 
         if not self.on_ground:
-            self.rotation += dt*(180.0/0.45)
-
+            self.rotation += self.sign * dt*(180.0/0.45)
 
     def land(self):
         self.on_ground = True
@@ -75,6 +78,11 @@ class Player:
             return
 
         self.on_ground = False
-        self.velocity[1] = JUMP_VELOCITY
-
+        self.velocity[1] = self.sign * JUMP_VELOCITY
         self.check_for_ground_after = None
+
+    def yellow_pad_jump(self):
+        self.on_ground = False
+        self.velocity[1] = self.sign * PAD_JUMP_VELOCITY
+        self.check_for_ground_after = None
+
