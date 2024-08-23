@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from functools import cache
-from math import tanh
 
-import numpy as np
 import pygame
 
 from rect import Rect
@@ -14,7 +12,7 @@ def lerp(a, b, x):
 
 
 @cache
-def scale_texture(source: pygame.Surface, rect_size: np.ndarray) -> pygame.Surface:
+def scale_texture(source: pygame.Surface, rect_size: (float, float)) -> pygame.Surface:
     return pygame.transform.scale(source, rect_size)
 
 
@@ -27,45 +25,51 @@ def rotate_texture(texture, angle, hflip, vflip):
 
 
 class Viewport:
-    def __init__(self, destination: pygame.Surface, zoom: float = 1.0, position: np.ndarray = None):
-        self.position = np.array([0.0, 0.0]) if position is None else position
+    def __init__(self, destination: pygame.Surface, zoom: float = 1.0, position: (float, float) = (0.0, 0.0)):
+        self.position = position
         self.zoom = zoom
 
-        self.target_position = np.copy(self.position)
+        self.target_position = self.position
         self.target_zoom = self.zoom
 
         self.destination = destination
-        self.resolution = np.array(destination.get_size())
+        self.resolution = destination.get_size()
 
         self.position_smoothing_speed = 1.0
         self.zoom_smoothing_speed = 0.5
 
     def zoom_in(self, delta: float):
         self.target_zoom *= delta
-        self.target_position *= delta
+        self.target_position = (
+            self.target_position[0] * delta,
+            self.target_position[1] * delta,
+        )
 
     def zoom_out(self, delta: float):
         self.target_zoom /= delta
         self.target_position /= delta
 
-    def convert_position(self, position: np.ndarray) -> np.ndarray:
-        return self.zoom * position * (1, -1) + self.resolution / 2 - self.position
+    def convert_position(self, position: (float, float)) -> (float, float):
+        return (
+            + self.zoom * position[0] + self.resolution[0] / 2 - self.position[0],
+            - self.zoom * position[1] + self.resolution[1] / 2 - self.position[1],
+        )
 
-    def convert_distance(self, distance: float | np.ndarray) -> float | np.ndarray:
+    def convert_distance(self, distance: float) -> float:
         return distance * self.zoom
 
     def convert_rect(self, rect: Rect) -> pygame.Rect:
         pg_rect = pygame.Rect((0, 0, 0, 0))
         
         try:
-            pg_rect.size = self.convert_distance(rect.size)
+            pg_rect.size = (rect.size[0] * self.zoom, rect.size[1] * self.zoom)
             pg_rect.center = self.convert_position(rect.center)
         except TypeError:
             pass
-
+            
         return pg_rect
 
-    def convert_position_from_screen(self, position: np.array):
+    def convert_position_from_screen(self, position: (float, float)):
         return ((position + self.position - self.resolution / 2) / self.zoom) * (1, -1)
 
     @property
@@ -101,10 +105,13 @@ class Viewport:
         return (0.5 * self.resolution[0] + self.target_position[0]) / self.target_zoom
 
     def tick(self, dt: float):
-        self.position = lerp(self.position, self.target_position, dt * self.position_smoothing_speed)
-
         delta_zoom = lerp(self.zoom, self.target_zoom, dt * self.zoom_smoothing_speed) / self.zoom
-        self.position *= delta_zoom
+
+        self.position = (
+            delta_zoom * lerp(self.position[0], self.target_position[0], dt * self.position_smoothing_speed),
+            delta_zoom * lerp(self.position[1], self.target_position[1], dt * self.position_smoothing_speed),
+        )
+
         self.zoom *= delta_zoom
 
     def blit(self, source: pygame.Surface, rect: Rect):
@@ -116,12 +123,13 @@ class Viewport:
         old_rect = source.get_rect().copy()
         source = rotate_texture(source, angle, hflip, vflip)
         new_rect = source.get_rect().copy()
-
-        rect.size[0] *= new_rect.w / old_rect.w
-        rect.size[1] *= new_rect.h / old_rect.h
+        
+        rect.size = (
+            rect.size[0] * new_rect.w / old_rect.w,
+            rect.size[1] * new_rect.h / old_rect.h,
+        )
 
         self.blit(source, rect)
-        
 
     def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float = 0.0):
         rect = self.convert_rect(rect)

@@ -1,4 +1,3 @@
-import numpy as np
 import base64
 import zlib
 
@@ -8,6 +7,11 @@ from constants import GROUND_HEIGHT
 
 
 def parse_level_string(txt: str):
+    base64_decoded = base64.urlsafe_b64decode(txt)
+    # window_bits = 15 | 32 will autodetect gzip or not
+    decompressed = zlib.decompress(base64_decoded, 15 | 32)
+    txt = decompressed.decode()
+
     object_strings = txt.split(';')
 
     objects = []
@@ -36,7 +40,7 @@ def parse_level_string(txt: str):
         rotation = float(obj.get('6', 0.0))
 
         level_objects.append(kind.new(
-            position=np.array([x, y]),
+            position=(x, y),
             hflip=hflip,
             vflip=vflip,
             rotation=rotation,
@@ -47,7 +51,4 @@ def parse_level_string(txt: str):
 
 def parse_level(path: str):
     with open(path) as f:
-        base64_decoded = base64.urlsafe_b64decode(f.read().encode())
-        # window_bits = 15 | 32 will autodetect gzip or not
-        decompressed = zlib.decompress(base64_decoded, 15 | 32)
-        return parse_level_string(decompressed.decode())
+        return parse_level_string(f.read().encode())

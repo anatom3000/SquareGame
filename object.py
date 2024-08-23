@@ -4,7 +4,6 @@ from typing import Optional
 from dataclasses import dataclass
 from enum import Enum
 
-import numpy as np
 import pygame
 
 from viewport import Viewport
@@ -25,8 +24,8 @@ class HitboxKind(Enum):
 class ObjectKind:
     texture_path: pygame.Surface
     hitbox_kind: HitboxKind
-    texture_size: Optional[np.ndarray] = None
-    hitbox: Optional[np.ndarray] = None
+    texture_size: Optional[(float, float)] = None
+    hitbox: Optional[(float, float)] = None
 
     def new(self, **kwargs):
         return Object(kind=self, **kwargs)
@@ -81,7 +80,7 @@ object_kinds = {
     5: ObjectKind( # inner deco block
         "assets/inner_deco_block.png",
         HitboxKind.DECORATION,
-        np.array([30, 30]),
+        (30, 30),
     ),
     6: ObjectKind( # pipe end deco block
         "assets/pipe_end_deco_block.png",
@@ -94,12 +93,12 @@ object_kinds = {
     8: ObjectKind( # default spike
         "assets/default_spike.png",
         HitboxKind.HAZARD,
-        np.array([30, 30]),
+        (30, 30),
     ),
     9: ObjectKind( # ground spike
         "assets/ground_spike.png",
         HitboxKind.HAZARD,
-        np.array([30, 27]),
+        (30, 27),
     ),
     10: ObjectKind( # blue portal
         "assets/default_block.png",
@@ -116,12 +115,12 @@ object_kinds = {
     36: ObjectKind( # yellow orb
         "assets/yellow_orb.png",
         HitboxKind.YELLOW_ORB,
-        np.array([30, 30]),
+        (30, 30),
     ),
     39: ObjectKind( # little spike
         "assets/little_spike.png",
         HitboxKind.HAZARD,
-        np.array([30, 14]),
+        (30, 14),
     ),
     40: ObjectKind( # default slab
         "assets/default_slab.png",
@@ -138,10 +137,10 @@ with open("assets/hitboxes.json") as f:
 
         box = hitboxes.get(str(id))
         if box is None:
-            object_kinds[id].hitbox = np.array([0.0, 0.0])
+            object_kinds[id].hitbox = (0.0, 0.0)
             continue
 
-        object_kinds[id].hitbox = np.array([box["w"], box["h"]])
+        object_kinds[id].hitbox = (box["w"], box["h"])
         if object_kinds[id].texture_size is None:
             object_kinds[id].texture_size = object_kinds[id].hitbox
 

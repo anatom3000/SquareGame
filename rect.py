@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import numpy as np
-
 
 class Rect:
-    def __init__(self, center: np.ndarray, size: np.ndarray):
-        self.center = np.array(center, dtype=float)
-        self.size = np.array(size, dtype=float)
+    def __init__(self, center: (float, float), size: (float, float)):
+        self.center = center
+        self.size = size
 
         self.top = self.center[1] + self.size[1] / 2
         self.bottom = self.center[1] - self.size[1] / 2
@@ -22,19 +20,19 @@ class Rect:
 
     @property
     def topleft(self):
-        return np.array((self.left, self.top))
+        return (self.left, self.top)
 
     @property
     def topright(self):
-        return np.array((self.right, self.top))
+        return (self.right, self.top)
 
     @property
     def bottomleft(self):
-        return np.array((self.left, self.bottom))
+        return (self.left, self.bottom)
 
     @property
     def bottomright(self):
-        return np.array((self.right, self.bottom))
+        return (self.right, self.bottom)
 
     def __str__(self):
         text = []

@@ -1,9 +1,7 @@
-from sys import exit
+from sys import exit, argv
 
 import pygame
 from pygame.locals import *
-
-import numpy as np
 
 from constants import RESOLUTION, MAX_FPS, BACKGROUND_COLOR, PHYSICS_SUBTICKS
 
@@ -14,15 +12,41 @@ screen = pygame.display.set_mode(RESOLUTION, pygame.RESIZABLE)
 from level import Level
 from viewport import Viewport
 from rect import Rect
-from level_parser import parse_level
+from level_parser import parse_level, parse_level_string
 
 clock = pygame.time.Clock()
 
 i = 1
+if len(argv) > 1:
+    level_id = int(argv[1])
+
+    import requests
+
+    headers = {
+        "User-Agent": ""
+    }
+
+    data = {
+        "levelID": level_id,
+        "secret": "Wmfd2893gb7"
+    }
+
+    url = "http://www.boomlings.com/database/downloadGJLevel22.php"
+
+    req = requests.post(url=url, data=data, headers=headers).text.split(':')[1::2]
+
+    if req == []:
+        print("invalid level id")
+        exit(42)
+
+    level_data = parse_level_string(req[3])
+else:
+    level_data = parse_level(f'assets/Resources/levels/{i}.lvl')
+
 
 level = Level(
     screen, 
-    parse_level(f'assets/Resources/levels/{i}.lvl'),
+    level_data,
     'assets/songs/StereoMadness.mp3'
 )
 
@@ -79,6 +103,9 @@ while running:
             if ev.key == K_f:
                 level.player.flipped = not level.player.flipped
                 level.player.on_ground = False
+
+            if ev.key == K_s:
+                level.player.ship = not level.player.ship
 
             if ev.key == K_t:
                 speed /= 2.0
