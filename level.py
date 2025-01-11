@@ -29,7 +29,7 @@ class Level:
         self.player = Player(position=(0.0, 105))
         self.objects = self.all_objects.copy()
 
-        self.viewport.position = (4/9 * self.viewport.convert_distance(200.0), 9/4 * self.viewport.convert_distance(GROUND_HEIGHT - 30 * 5))
+        self.viewport.position = (4/9 * self.viewport.convert_distance(200.0), 4/9 * self.viewport.convert_distance(GROUND_HEIGHT - 30 * 15))
 
         self.stop_time = None
         self.input_activated = False
