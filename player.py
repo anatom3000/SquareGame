@@ -36,6 +36,7 @@ class AlignAnimation:
     def finished(self) -> bool:
         return self.t > self.duration
 
+
 class Player:
     CUBE_TEXTURE = pilImageToSurface(gdicons.render_icon(
         gamemode="cube",
@@ -85,10 +86,10 @@ class Player:
     def draw_ship(self, viewport: Viewport):
         rotation = self.rotation
         
-        cube_rect = Rect((self.position[0]+5.0*math.sin(rotation / 180 * math.pi), self.position[1]+self.sign*5.0*math.cos(rotation / 180 * math.pi)), size=(18.0, 18.0))
+        cube_rect = Rect((self.position[0]+self.sign*5.0*math.sin(rotation / 180 * math.pi), self.position[1]+self.sign*5.0*math.cos(rotation / 180 * math.pi)), size=(18.0, 18.0))
         viewport.blit_rotated(self.CUBE_TEXTURE, cube_rect, rotation, False, self.flipped)
 
-        ship_rect = Rect((self.position[0]-4.0*math.sin(rotation / 180 * math.pi), self.position[1]-self.sign*4.0*math.cos(rotation / 180 * math.pi)), size=(37.5, 22.5))
+        ship_rect = Rect((self.position[0]-self.sign*4.0*math.sin(rotation / 180 * math.pi), self.position[1]-self.sign*4.0*math.cos(rotation / 180 * math.pi)), size=(37.5, 22.5))
         viewport.blit_rotated(self.SHIP_TEXTURE, ship_rect, rotation, False, self.flipped)
 
     @property
@@ -135,7 +136,7 @@ class Player:
         target_rotation = 90 * round(self.rotation / 90)
 
         if self.rotation != target_rotation:
-            self.alignment_anim = AlignAnimation(self.rotation, target_rotation, 200)
+            self.alignment_anim = AlignAnimation(self.rotation, target_rotation, 500)
 
     def jump(self, dt: float):
         if not self.ship:
