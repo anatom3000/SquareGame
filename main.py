@@ -52,7 +52,7 @@ level = Level(
 
 paused = False
 t = 0
-speed = 1.0
+speed = 1
 done = False
 
 running = True
@@ -82,7 +82,7 @@ while running:
                 level.restart()
 
             if ev.key == K_SPACE or ev.key == K_UP:
-                level.tap()
+                level.release()
 
             if ev.key == K_LEFT:
                 i -= 1

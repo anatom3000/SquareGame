@@ -131,12 +131,12 @@ class Viewport:
 
         self.blit(source, rect)
 
-    def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float = 0.0):
+    def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float | int = 0, widthInPx: bool = False):
         rect = self.convert_rect(rect)
 
         if width == 0.0:
             width = 0
-        else:
+        elif not widthInPx:
             width = int(self.convert_distance(width))
 
         pygame.draw.rect(self.destination, color, rect, width)

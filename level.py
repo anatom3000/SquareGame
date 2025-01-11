@@ -92,7 +92,7 @@ class Level:
         last_left_invisible_object = None
 
         for i, obj in enumerate(self.objects):
-            if camera_left > obj.bounding_box.right:
+            if obj.bounding_box.right + 30.0 < camera_left:
                 last_left_invisible_object = i
                 continue
 
@@ -101,7 +101,6 @@ class Level:
                 break  # objects are sorted by x position
             
             match obj.kind.hitbox_kind:
-
                 case HitboxKind.SOLID:
                     self.handle_solid(obj, alignment_tolerance, big_player_box, small_player_box, dt)
                 case HitboxKind.HAZARD:
@@ -250,6 +249,8 @@ class Level:
         self.player.draw(self.viewport, self.show_hitboxes)
 
     def stop(self):
-        if not self.noclip:
-            self.stop_time = 0.0
-            pygame.mixer.music.pause()
+        if self.noclip:
+            return
+
+        self.stop_time = 0.0
+        pygame.mixer.music.pause()
