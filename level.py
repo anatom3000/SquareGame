@@ -5,9 +5,45 @@ import pygame.mixer
 from object import Object, HitboxKind
 from player import Player
 from rect import Rect
-from constants import PLAYER_SPEED, GROUND_HEIGHT, CAMERA_TRIGGER_UP_ZONE, CAMERA_TRIGGER_DOWN_ZONE, CAMERA_MOVE_DISTANCE, PLAYER_GRAVITY, SOLID_ALIGNMENT_TOLERANCE_ON_GROUND, SOLID_ALIGNMENT_TOLERANCE, RESTART_DELAY, SHIP_GRAVITY, MIN_SHIP_VELOCITY, MAX_SHIP_VELOCITY
+from constants import PLAYER_SPEED, GROUND_HEIGHT, CAMERA_TRIGGER_UP_ZONE, CAMERA_TRIGGER_DOWN_ZONE, CAMERA_MOVE_DISTANCE, PLAYER_GRAVITY, SOLID_ALIGNMENT_TOLERANCE_ON_GROUND, SOLID_ALIGNMENT_TOLERANCE, RESTART_DELAY, SHIP_GRAVITY, MIN_SHIP_VELOCITY, MAX_SHIP_VELOCITY, BACKGROUND_SCROLL_SPEED, BACKGROUND_TILE_SIZE, BACKGROUND_CLONES, GROUND_CLONES, GROUND_TILE_SIZE, LINE_RELATIVE_WIDTH
 from viewport import Viewport
 
+
+class Background:
+    SPRITE = pygame.image.load("assets/background.png").convert_alpha()
+
+    def __init__(self, position: (float, float)):
+        self.position = position
+        
+        self.SPRITE.fill((80, 150, 235), special_flags=pygame.BLEND_RGB_MULT)
+
+    def draw(self, viewport: Viewport):
+        viewport.blit(self.SPRITE, Rect(self.position, (BACKGROUND_TILE_SIZE, BACKGROUND_TILE_SIZE)))
+
+
+class Ground:
+    SPRITE = pygame.image.load("assets/ground.png").convert_alpha()
+
+    def __init__(self, position: (float, float)):
+        self.position = position
+
+        self.SPRITE.fill((80, 150, 235), special_flags=pygame.BLEND_RGB_MULT)
+
+    def draw(self, viewport: Viewport):
+        viewport.blit(self.SPRITE, Rect(self.position, (GROUND_TILE_SIZE, GROUND_TILE_SIZE)))
+
+class Line:
+    SPRITE = pygame.image.load("assets/line.png").convert_alpha()
+
+    def __init__(self, height: float):
+        self.height = height
+
+    def draw(self, viewport: Viewport):
+        rect = self.SPRITE.get_rect()
+        aspect = rect.height / rect.width
+        width = (viewport.right - viewport.left) * LINE_RELATIVE_WIDTH
+
+        viewport.blit(self.SPRITE, Rect((viewport.position[0] / viewport.zoom, self.height), (width, aspect*width)))
 
 class Level:
     def __init__(self, screen, objects: list[Object], song: str):
@@ -30,6 +66,18 @@ class Level:
         self.objects = self.all_objects.copy()
 
         self.viewport.position = (4/9 * self.viewport.convert_distance(200.0), 4/9 * self.viewport.convert_distance(GROUND_HEIGHT - 30 * 15))
+
+        self.backgrounds = [
+            Background((self.viewport.left+(2*i+1)*BACKGROUND_TILE_SIZE/2, self.viewport.bottom+BACKGROUND_TILE_SIZE/2))
+            for i in range(BACKGROUND_CLONES)
+        ]
+
+        self.grounds = [
+            Ground((self.viewport.left+(2*i+1)*GROUND_TILE_SIZE/2, GROUND_HEIGHT/2-19))
+            for i in range(GROUND_CLONES)
+        ]
+
+        self.line = Line(GROUND_HEIGHT+1)
 
         self.stop_time = None
         self.input_activated = False
@@ -227,6 +275,19 @@ class Level:
             self.viewport.position[0] + dt * PLAYER_SPEED * self.viewport.zoom,
             self.viewport.position[1],
         )
+        
+        for bg in self.backgrounds:
+            bg.position = (
+                bg.position[0] + dt * BACKGROUND_SCROLL_SPEED * PLAYER_SPEED * self.viewport.zoom,
+                bg.position[1],
+            )
+
+            if bg.position[0] + BACKGROUND_TILE_SIZE/2 < self.viewport.left:
+                bg.position = (bg.position[0] + BACKGROUND_CLONES*BACKGROUND_TILE_SIZE, bg.position[1])
+
+        for g in self.grounds:
+            if g.position[0] + BACKGROUND_TILE_SIZE/2 < self.viewport.left:
+                g.position = (g.position[0] + GROUND_CLONES*GROUND_TILE_SIZE, g.position[1])
 
         player_distance_to_screen_top = self.viewport.target_top - self.player.position[1]
         if player_distance_to_screen_top < CAMERA_TRIGGER_UP_ZONE:
@@ -246,10 +307,21 @@ class Level:
         self.viewport.tick(dt)
 
     def draw(self):
+        for bg in self.backgrounds:
+            bg.draw(self.viewport)
+
+
         for obj in self.objects[:self.first_right_invisible_object]:
             obj.draw(self.viewport, self.show_hitboxes)
 
+
         self.player.draw(self.viewport, self.show_hitboxes)
+
+        self.line.draw(self.viewport)
+
+        for g in self.grounds:
+            g.draw(self.viewport)
+
 
     def stop(self):
         if self.noclip:
