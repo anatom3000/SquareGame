@@ -35,7 +35,7 @@ class Viewport:
         self.destination = destination
         self.resolution = destination.get_size()
 
-        self.position_smoothing_speed = 1.0
+        self.position_smoothing_speed = 2.0
         self.zoom_smoothing_speed = 0.5
 
     def zoom_in(self, delta: float):

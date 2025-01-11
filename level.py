@@ -16,6 +16,8 @@ class Level:
         pygame.mixer.music.play()
         pygame.mixer.music.pause()
         self.all_objects = sorted(objects, key=lambda x: x.position[0])
+
+        self.viewport = Viewport(self.screen, zoom=9 / 4, position=(0.0))
         self.restart()
 
         self.noclip = False
@@ -24,9 +26,10 @@ class Level:
     def restart(self):
         pygame.mixer.music.rewind()
 
-        self.viewport = Viewport(self.screen, zoom=9 / 4, position=(200.0, GROUND_HEIGHT - 30 * 15))
         self.player = Player(position=(0.0, 105))
         self.objects = self.all_objects.copy()
+
+        self.viewport.position = (4/9 * self.viewport.convert_distance(200.0), 9/4 * self.viewport.convert_distance(GROUND_HEIGHT - 30 * 5))
 
         self.stop_time = None
         self.input_activated = False
@@ -229,7 +232,7 @@ class Level:
         if player_distance_to_screen_top < CAMERA_TRIGGER_UP_ZONE:
             self.viewport.target_position = (
                 self.viewport.target_position[0],
-                self.viewport.target_position[1] - (CAMERA_TRIGGER_UP_ZONE + CAMERA_MOVE_DISTANCE),
+                self.viewport.target_position[1] - (CAMERA_TRIGGER_UP_ZONE + CAMERA_MOVE_DISTANCE*max(0.0, self.player.velocity[1])),
             )
 
         player_distance_to_screen_bottom = self.player.position[1] - self.viewport.target_bottom
@@ -237,7 +240,7 @@ class Level:
         if player_distance_to_screen_bottom < CAMERA_TRIGGER_DOWN_ZONE:
             self.viewport.target_position = (
                 self.viewport.target_position[0],
-                self.viewport.target_position[1] + (CAMERA_TRIGGER_UP_ZONE + CAMERA_MOVE_DISTANCE),
+                self.viewport.target_position[1] + (CAMERA_TRIGGER_UP_ZONE - CAMERA_MOVE_DISTANCE*min(0.0, self.player.velocity[1])),
             )
 
         self.viewport.tick(dt)

@@ -126,6 +126,16 @@ while running:
             if ev.button == 1:
                 level.release()
 
+        if ev.type == WINDOWRESIZED or ev.type == WINDOWSIZECHANGED:
+            factor = ev.y / level.viewport.resolution[1]
+            level.viewport.resolution = (ev.x, ev.y)
+
+            level.viewport.zoom *= factor
+            level.viewport.position = (factor*level.viewport.position[0], factor*level.viewport.position[1])
+
+            level.viewport.target_zoom *= factor
+            level.viewport.target_position = (factor*level.viewport.target_position[0], factor*level.viewport.target_position[1])
+
     screen.fill(BACKGROUND_COLOR)
 
     if not paused:
