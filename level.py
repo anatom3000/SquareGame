@@ -15,7 +15,7 @@ class Background:
     def __init__(self, position: (float, float)):
         self.position = position
         
-        self.SPRITE.fill((80, 150, 235), special_flags=pygame.BLEND_RGB_MULT)
+        self.SPRITE.fill((40, 125, 255), special_flags=pygame.BLEND_RGBA_MULT)
 
     def draw(self, viewport: Viewport):
         viewport.blit(self.SPRITE, Rect(self.position, (BACKGROUND_TILE_SIZE, BACKGROUND_TILE_SIZE)))
@@ -27,7 +27,7 @@ class Ground:
     def __init__(self, position: (float, float)):
         self.position = position
 
-        self.SPRITE.fill((80, 150, 235), special_flags=pygame.BLEND_RGB_MULT)
+        self.SPRITE.fill((80, 150, 235), special_flags=pygame.BLEND_RGBA_MULT)
 
     def draw(self, viewport: Viewport):
         viewport.blit(self.SPRITE, Rect(self.position, (GROUND_TILE_SIZE, GROUND_TILE_SIZE)))
@@ -310,10 +310,12 @@ class Level:
         for bg in self.backgrounds:
             bg.draw(self.viewport)
 
-
-        for obj in self.objects[:self.first_right_invisible_object]:
+        args = [
             obj.draw(self.viewport, self.show_hitboxes)
+            for obj in self.objects[:self.first_right_invisible_object]
+        ]
 
+        self.viewport.blits_rotated(args)
 
         self.player.draw(self.viewport, self.show_hitboxes)
 

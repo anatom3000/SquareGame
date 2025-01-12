@@ -2,22 +2,16 @@ from __future__ import annotations
 from typing import Optional
 import math
 
-import pygame
 import gdicons
 
 from object import Object
 from viewport import Viewport, lerp
 from rect import Rect
+from utils import pilImageToSurface
 
 from constants import PLAYER_COLOR, JUMP_VELOCITY, PAD_JUMP_VELOCITY, SHIP_BOOST, HITBOX_WIDTH
 
 gdicons.set_resources_path("./assets/Resources")
-
-
-def pilImageToSurface(pilImage):
-    return pygame.image.frombytes(
-        pilImage.tobytes(), pilImage.size, pilImage.mode
-    ).convert_alpha()
 
 
 class AlignAnimation:

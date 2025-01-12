@@ -46,9 +46,7 @@ class Object:
         self.bounding_box = Rect(self.position, self.kind.hitbox)
         self.display_box = Rect(self.position, self.kind.texture_size)
 
-    def draw(self, viewport: Viewport, show_hitbox: bool):
-        viewport.blit_rotated(self.kind.texture, self.display_box, self.rotation, self.hflip, self.vflip)
-
+    def draw(self, viewport: Viewport, show_hitbox: bool) -> (pygame.Surface, Rect, float, bool, bool):
         if show_hitbox:
             if self.kind.hitbox_kind == HitboxKind.SOLID:
                 color = (0, 0, 255)
@@ -58,6 +56,9 @@ class Object:
                 color = (0, 255, 0)
 
             viewport.draw_rect(color, self.bounding_box, width=1.5)
+
+        return (self.kind.texture, self.display_box, self.rotation, self.hflip, self.vflip)
+
 
 
 object_kinds = {

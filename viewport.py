@@ -23,7 +23,6 @@ def rotate_texture(texture, angle, hflip, vflip):
 
     return texture
 
-
 class Viewport:
     def __init__(self, destination: pygame.Surface, zoom: float = 1.0, position: (float, float) = (0.0, 0.0)):
         self.position = position
@@ -114,12 +113,20 @@ class Viewport:
 
         self.zoom *= delta_zoom
 
-    def blit(self, source: pygame.Surface, rect: Rect):
+    def blit(self, source: pygame.Surface, rect: Rect, **kwargs):
         rect = self.convert_rect(rect)
 
-        self.destination.blit(scale_texture(source, rect.size), rect)
+        self.destination.blit(scale_texture(source, rect.size), rect, **kwargs)
 
-    def blit_rotated(self, source: pygame.Surface, rect: Rect, angle: float, hflip: bool, vflip: bool):
+    def blits(self, sources: list[(pygame.Surface, Rect)]):
+        args = []
+        for (source, rect) in sources:
+            rect = self.convert_rect(rect)
+            args.append((scale_texture(source, rect.size), rect))
+
+        self.destination.blits(args)
+
+    def blit_rotated(self, source: pygame.Surface, rect: Rect, angle: float, hflip: bool, vflip: bool, **kwargs):
         old_rect = source.get_rect().copy()
         source = rotate_texture(source, angle, hflip, vflip)
         new_rect = source.get_rect().copy()
@@ -129,7 +136,24 @@ class Viewport:
             rect.size[1] * new_rect.h / old_rect.h,
         )
 
-        self.blit(source, rect)
+        self.blit(source, rect, **kwargs)
+    
+    def blits_rotated(self, sources: list[(pygame.Surface, Rect, float, bool, bool)]):
+        args = []
+        for (source, rect, angle, hflip, vflip) in sources:
+            old_rect = source.get_rect().copy()
+            source = rotate_texture(source, angle, hflip, vflip)
+            new_rect = source.get_rect().copy()
+            
+            rect.size = (
+                rect.size[0] * new_rect.w / old_rect.w,
+                rect.size[1] * new_rect.h / old_rect.h,
+            )
+            rect = self.convert_rect(rect)
+
+            args.append((scale_texture(source, rect.size), rect))
+
+        self.destination.blits(args)
 
     def draw_rect(self, color: tuple[int, int, int], rect: Rect, width: float | int = 0, widthInPx: bool = False):
         rect = self.convert_rect(rect)
