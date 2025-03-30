@@ -53,7 +53,7 @@ class Level:
         pygame.mixer.music.pause()
         self.all_objects = sorted(objects, key=lambda x: x.position[0])
 
-        self.viewport = Viewport(self.screen, zoom=9 / 4, position=(0.0))
+        self.viewport = Viewport(self.screen, zoom=9 / 4, position=(-120.0, 0.0))
         self.restart()
 
         self.noclip = False
@@ -267,15 +267,14 @@ class Level:
         self.player.on_ground = False
 
     def tick_camera(self, dt: float):
-        self.viewport.position = (
-            self.viewport.position[0] + dt * PLAYER_SPEED * self.viewport.zoom,
-            self.viewport.position[1],
-        )
-        self.viewport.target_position = (
+        pos = (
             self.viewport.position[0] + dt * PLAYER_SPEED * self.viewport.zoom,
             self.viewport.position[1],
         )
         
+        self.viewport.position = pos
+        self.viewport.target_position = pos
+
         for bg in self.backgrounds:
             bg.position = (
                 bg.position[0] + dt * BACKGROUND_SCROLL_SPEED * PLAYER_SPEED * self.viewport.zoom,

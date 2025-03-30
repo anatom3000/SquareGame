@@ -114,7 +114,7 @@ while running:
 
         if ev.type == KEYDOWN:
             if ev.key == K_SPACE or ev.key == K_UP:
-                level.release()
+                level.tap()
 
         if ev.type == MOUSEBUTTONDOWN:
             # 1 = left click; 2 = middle click; 3 = right click; 4 = scroll up; 5 = scroll down

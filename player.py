@@ -9,23 +9,27 @@ from viewport import Viewport, lerp
 from rect import Rect
 from utils import pilImageToSurface
 
-from constants import PLAYER_COLOR, JUMP_VELOCITY, PAD_JUMP_VELOCITY, SHIP_BOOST, HITBOX_WIDTH
+from constants import *
 
 gdicons.set_resources_path("./assets/Resources")
 
 
 class AlignAnimation:
-    def __init__(self, origin: float, target: float, speed: float):
+    def __init__(self, origin: float, target: float):
         self.origin = origin
         self.target = target
-        self.duration = abs(target - origin) / speed
+        self.duration = abs(target - origin) / (180.0 / PLAYER_ROTATION_SPEED)
         self.t = 0.0
 
     def tick(self, dt: float):
         self.t += dt
     
     def get(self) -> float:
-        return round(lerp(self.origin, self.target, self.t/self.duration) * 10000) // 10000
+        return round(lerp(self.origin, self.target, AlignAnimation.easing(self.t/self.duration)) * 10000) // 10000
+
+    @staticmethod
+    def easing(x: float) -> float:
+        return 1 - (1 - x) * (1 - x)
 
     def finished(self) -> bool:
         return self.t > self.duration
@@ -112,7 +116,7 @@ class Player:
             self.alignment_anim = None
 
             if not self.ship:
-                self.rotation += self.sign * dt*(180.0/0.45)
+                self.rotation += self.sign * dt*(180.0/PLAYER_ROTATION_SPEED)
             else:
                 self.rotation = -90.0 + math.atan2(self.velocity[0], self.velocity[1]) * 180 / math.pi
 
@@ -130,7 +134,7 @@ class Player:
         target_rotation = 90 * round(self.rotation / 90)
 
         if self.rotation != target_rotation:
-            self.alignment_anim = AlignAnimation(self.rotation, target_rotation, 500)
+            self.alignment_anim = AlignAnimation(self.rotation, target_rotation)
 
     def jump(self, dt: float):
         if not self.ship:
