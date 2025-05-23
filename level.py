@@ -262,9 +262,13 @@ class Level:
     def handle_gravity_portal(self, obj: Object, flipped: bool):
         if not self.player.big_bounding_box.collide_rect(obj.bounding_box):
             return
+        
+        if flipped == self.player.flipped:
+            return
 
         self.player.flipped = flipped
         self.player.on_ground = False
+        self.player.velocity = (self.player.velocity[0], self.player.velocity[1]/2)
 
     def tick_camera(self, dt: float):
         pos = (
@@ -290,17 +294,21 @@ class Level:
 
         player_distance_to_screen_top = self.viewport.target_top - self.player.position[1]
         if player_distance_to_screen_top < CAMERA_TRIGGER_UP_ZONE:
+            diff = (CAMERA_TRIGGER_UP_ZONE + CAMERA_MOVE_DISTANCE*max(0.0, self.player.velocity[1]))
+
             self.viewport.target_position = (
                 self.viewport.target_position[0],
-                self.viewport.target_position[1] - (CAMERA_TRIGGER_UP_ZONE + CAMERA_MOVE_DISTANCE*max(0.0, self.player.velocity[1])),
+                self.viewport.target_position[1] - diff,
             )
 
         player_distance_to_screen_bottom = self.player.position[1] - self.viewport.target_bottom
 
         if player_distance_to_screen_bottom < CAMERA_TRIGGER_DOWN_ZONE:
+            diff = CAMERA_TRIGGER_UP_ZONE - CAMERA_MOVE_DISTANCE*min(0.0, self.player.velocity[1])
+
             self.viewport.target_position = (
                 self.viewport.target_position[0],
-                self.viewport.target_position[1] + (CAMERA_TRIGGER_UP_ZONE - CAMERA_MOVE_DISTANCE*min(0.0, self.player.velocity[1])),
+                self.viewport.target_position[1] + diff,
             )
 
         self.viewport.tick(dt)
